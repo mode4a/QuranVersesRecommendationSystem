@@ -10,6 +10,26 @@ verse(2, 153, patience, believers, short, encouragement, madani).
 verse(9, 60, charity, believers, medium, rule, madani).
 verse(7, 206, knowledge, believers, short, warning, makki).
 verse(12, 1, story, humanity, short, glad_tidings, makki).
+verse(2, 6, knowledge, prophet, short, consolation, madani).
+verse(2, 8, knowledge, believers, short, warning, madani).
+verse(2, 21, rule, humanity, short, command, madani).
+verse(2, 23, justice, humanity, short, challenge, madani).
+verse(2, 25, knowledge, believers, short, glad_tidings, madani).
+verse(3, 7, knowledge, prophet, long, glory, madani).
+verse(3, 8, pray, god, short, supplication, madani).
+verse(3, 9, pray, god, short, supplication, madani).
+verse(3, 12, knowledge, prophet, short, challenge, madani).
+verse(3, 55, story, prophet, medium, mercy, madani).
+verse(4, 1, creation, humanity, medium, command, madani).
+verse(4, 9, justice, believers, short, reassurance, madani).
+verse(4, 19, rule, believers, medium, command, madani).
+verse(4, 23, rule, believers, long, command, madani).
+verse(4, 26, knowledge, believers, short, mercy, madani).
+verse(5, 27, story, prophet, medium, lesson, madani).
+verse(5, 28, story, humanity, short, piety, madani).
+verse(5, 32, justice, humanity, long, warning, madani).
+verse(5, 33, rule, humanity, medium, punishment, madani).
+verse(5, 35, justice, believers, short, encouragement, madani).
 
 
 recommend_verse(Surah, Verse, Theme, Audience, Length, Tone, Location) :-
