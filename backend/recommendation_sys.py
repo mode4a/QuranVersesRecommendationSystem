@@ -1,4 +1,4 @@
-from pyswip import Prolog
+from prolog_api import get_recommendations
 from quran_api import fetch_quran_verse
 
 
@@ -12,9 +12,6 @@ def get_valid_input(prompt, valid_options, allow_empty=True):
         print(f"Invalid input. Please choose from {valid_options} or leave blank.")
 
 def main():
-
-    prolog = Prolog()
-    prolog.consult("quran_dataset.pl")
 
     themes = ['knowledge', 'story', 'rule', 'patience', 'justice', 'charity']
     audiences = ['believers', 'humanity', 'disbelievers', 'prophet']
@@ -46,11 +43,11 @@ def main():
 
     query = f"recommend('{theme}', '{audience}', '{length}', '{tone}', '{location}', Pairs)"
 
-    try:
-        results = list(prolog.query(query))
-    except Exception as e:
-        print(f"Error executing Prolog query: {e}")
+    response = get_recommendations(query)
+    if not response['status']:
+        print(f"Error fetching recommendations: {response['error']}")
         return
+    results = response['data']
 
     if not results:
         print("No matching verses found or invalid query.")
