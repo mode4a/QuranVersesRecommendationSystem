@@ -3,11 +3,12 @@ import { motion } from "framer-motion";
 import { Play, Pause, Heart, Share2, X } from "lucide-react";
 import { VerseData } from "../types/types";
 import { toast } from "react-toastify";
+import { fetchVerseText } from "../services/quranApi"; // Import the new function
 
 interface VerseDisplayProps {
   verse: VerseData;
   backgroundClass: string;
-  onExit: () => void; // New prop for handling exit
+  onExit: () => void;
 }
 
 const VerseDisplay: React.FC<VerseDisplayProps> = ({
@@ -20,6 +21,43 @@ const VerseDisplay: React.FC<VerseDisplayProps> = ({
     null
   );
   const [showFullContent, setShowFullContent] = useState<boolean>(false);
+  const [favorites, setFavorites] = useState<VerseData[]>([]); // In-memory favorites
+  const [actualVerseText, setActualVerseText] = useState<{
+    text: string;
+    translation: string;
+  } | null>(null);
+  const [loadingText, setLoadingText] = useState(true);
+
+  // Load favorites from memory (you could also pass this as props from parent)
+  useEffect(() => {
+    // For now, initialize empty favorites array
+    // In a real app, you might want to pass favorites from a parent component or context
+    setFavorites([]);
+  }, []);
+
+  // Fetch actual verse text when component mounts
+  useEffect(() => {
+    const loadVerseText = async () => {
+      try {
+        const textData = await fetchVerseText(
+          verse.surah_number,
+          verse.verse_number
+        );
+        setActualVerseText(textData);
+      } catch (error) {
+        console.error("Failed to fetch verse text:", error);
+        // Fallback to provided text
+        setActualVerseText({
+          text: verse.text,
+          translation: verse.translation || "",
+        });
+      } finally {
+        setLoadingText(false);
+      }
+    };
+
+    loadVerseText();
+  }, [verse]);
 
   // Show content after initial entrance animation
   useEffect(() => {
@@ -33,10 +71,15 @@ const VerseDisplay: React.FC<VerseDisplayProps> = ({
     if (verse && verse.audio) {
       const audio = new Audio(verse.audio);
       audio.addEventListener("ended", () => setIsPlaying(false));
+      audio.addEventListener("error", (e) => {
+        console.error("Audio loading error:", e);
+        toast.error("Audio file not available for this verse");
+      });
       setAudioElement(audio);
       return () => {
         audio.pause();
         audio.removeEventListener("ended", () => setIsPlaying(false));
+        audio.removeEventListener("error", () => {});
       };
     }
   }, [verse]);
@@ -46,7 +89,10 @@ const VerseDisplay: React.FC<VerseDisplayProps> = ({
       if (isPlaying) {
         audioElement.pause();
       } else {
-        audioElement.play();
+        audioElement.play().catch((error) => {
+          console.error("Error playing audio:", error);
+          toast.error("Could not play audio. Audio file may not be available.");
+        });
       }
       setIsPlaying(!isPlaying);
     }
@@ -78,7 +124,10 @@ const VerseDisplay: React.FC<VerseDisplayProps> = ({
   };
 
   const shareVerse = () => {
-    const text = `${verse.text}\n\nSurah ${verse.surah_name} (${verse.surah_number}:${verse.verse_number})`;
+    const verseText = actualVerseText?.text || verse.text;
+    const translation = actualVerseText?.translation || verse.translation || "";
+
+    const text = `${verseText}\n\n"${translation}"\n\nSurah ${verse.surah_name} (${verse.surah_number}:${verse.verse_number})`;
 
     if (navigator.share) {
       navigator
@@ -102,6 +151,9 @@ const VerseDisplay: React.FC<VerseDisplayProps> = ({
       .then(() => toast.success("Verse copied to clipboard"))
       .catch(() => toast.error("Failed to copy verse to clipboard"));
   };
+
+  const displayText = actualVerseText?.text || verse.text;
+  const displayTranslation = actualVerseText?.translation || verse.translation;
 
   return (
     <motion.div
@@ -194,31 +246,40 @@ const VerseDisplay: React.FC<VerseDisplayProps> = ({
         </div>
 
         <div className="mb-10">
-          <motion.p
-            className="text-4xl leading-relaxed text-right font-arabic mb-8"
-            dir="rtl"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{
-              opacity: showFullContent ? 1 : 0,
-              y: showFullContent ? 0 : 20,
-            }}
-            transition={{ duration: 0.8 }}
-          >
-            {verse.text}
-          </motion.p>
+          {loadingText ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
+              <p className="text-gray-300">Loading verse text...</p>
+            </div>
+          ) : (
+            <>
+              <motion.p
+                className="text-4xl leading-relaxed text-right font-arabic mb-8"
+                dir="rtl"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{
+                  opacity: showFullContent ? 1 : 0,
+                  y: showFullContent ? 0 : 20,
+                }}
+                transition={{ duration: 0.8 }}
+              >
+                {displayText}
+              </motion.p>
 
-          {verse.translation && (
-            <motion.p
-              className="text-xl text-gray-200 leading-relaxed"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{
-                opacity: showFullContent ? 1 : 0,
-                y: showFullContent ? 0 : 20,
-              }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-            >
-              "{verse.translation}"
-            </motion.p>
+              {displayTranslation && (
+                <motion.p
+                  className="text-xl text-gray-200 leading-relaxed"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{
+                    opacity: showFullContent ? 1 : 0,
+                    y: showFullContent ? 0 : 20,
+                  }}
+                  transition={{ duration: 0.8, delay: 0.2 }}
+                >
+                  "{displayTranslation}"
+                </motion.p>
+              )}
+            </>
           )}
         </div>
 
