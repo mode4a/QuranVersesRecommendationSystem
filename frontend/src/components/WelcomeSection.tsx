@@ -1,14 +1,31 @@
 import React, { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, BookOpenText } from "lucide-react";
+import { ChevronDown, BookOpenText, Heart } from "lucide-react";
 
 interface WelcomeSectionProps {
   onStartJourney: () => void;
+  onViewFavorites: () => void; // New prop for favorites
 }
 
-const WelcomeSection: React.FC<WelcomeSectionProps> = ({ onStartJourney }) => {
+const WelcomeSection: React.FC<WelcomeSectionProps> = ({
+  onStartJourney,
+  onViewFavorites,
+}) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isZooming, setIsZooming] = useState(false);
+  const [favoritesCount, setFavoritesCount] = useState(0);
+
+  // Load favorites count
+  useEffect(() => {
+    try {
+      const favorites = JSON.parse(
+        localStorage.getItem("favoriteVerses") || "[]"
+      );
+      setFavoritesCount(favorites.length);
+    } catch (error) {
+      console.error("Error loading favorites count:", error);
+    }
+  }, []);
 
   // Disable scroll on the homepage
   useEffect(() => {
@@ -75,6 +92,25 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({ onStartJourney }) => {
             "linear-gradient(135deg, rgba(30, 58, 138, 0.1) 0%, rgba(30, 58, 138, 0.2) 100%)",
         }}
       >
+        {/* Favorites Button - Fixed position */}
+        <motion.button
+          onClick={onViewFavorites}
+          className="fixed top-6 right-6 z-20 flex items-center gap-2 px-4 py-3 bg-slate-800/80 hover:bg-slate-700/80 backdrop-blur-sm rounded-full transition-all duration-300 text-white group"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <Heart className="w-5 h-5 text-pink-500" />
+          <span className="font-medium">Favorites</span>
+          {favoritesCount > 0 && (
+            <span className="bg-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+              {favoritesCount > 99 ? "99+" : favoritesCount}
+            </span>
+          )}
+        </motion.button>
+
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-900/5 to-slate-900/10" />
           <motion.div
