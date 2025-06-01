@@ -132,25 +132,6 @@ const VerseRecommender: React.FC = () => {
     }, 300);
   };
 
-  const handleSkipAll = async () => {
-    setLoading(true);
-    try {
-      const verseData = await getRandomVerse({
-        theme: "",
-        audience: "",
-        length: "",
-        tone: "",
-        location: "",
-      });
-      setVerse(verseData);
-    } catch (error) {
-      console.error("Error fetching verse:", error);
-      toast.error("Could not fetch a verse. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const moveToNextStep = async () => {
     setCurrentStep((prev) => prev + 1);
     if (currentStep >= steps.length - 1) {
