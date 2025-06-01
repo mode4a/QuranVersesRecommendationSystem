@@ -9,6 +9,7 @@ import JourneyStep from "./JourneyStep";
 import VerseDisplay from "./VerseDisplay";
 import TunnelEffect from "./TunnelEffect";
 import WelcomeSection from "./WelcomeSection";
+import FavoriteVerses from "./FavoritesPage"; // New import
 import {
   themeOptions,
   audienceOptions,
@@ -67,6 +68,7 @@ const steps = [
 
 const VerseRecommender: React.FC = () => {
   const [showWelcome, setShowWelcome] = useState(true);
+  const [showFavorites, setShowFavorites] = useState(false); // New state
   const [currentStep, setCurrentStep] = useState(-1);
   const [loading, setLoading] = useState(false);
   const [verse, setVerse] = useState<VerseData | null>(null);
@@ -98,6 +100,7 @@ const VerseRecommender: React.FC = () => {
     setCurrentStep(-1);
     setLoading(false);
     setShowTunnel(false);
+    setShowFavorites(false); // Reset favorites view
     setZoomEffect(0);
     setParameters({
       theme: "",
@@ -108,6 +111,18 @@ const VerseRecommender: React.FC = () => {
     });
 
     // Show welcome screen again
+    setShowWelcome(true);
+  };
+
+  // New function to handle favorites navigation
+  const handleViewFavorites = () => {
+    setShowWelcome(false);
+    setShowFavorites(true);
+  };
+
+  // New function to go back from favorites to homepage
+  const handleBackFromFavorites = () => {
+    setShowFavorites(false);
     setShowWelcome(true);
   };
 
@@ -130,6 +145,25 @@ const VerseRecommender: React.FC = () => {
     setTimeout(() => {
       moveToNextStep();
     }, 300);
+  };
+
+  const handleSkipAll = async () => {
+    setLoading(true);
+    try {
+      const verseData = await getRandomVerse({
+        theme: "",
+        audience: "",
+        length: "",
+        tone: "",
+        location: "",
+      });
+      setVerse(verseData);
+    } catch (error) {
+      console.error("Error fetching verse:", error);
+      toast.error("Could not fetch a verse. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const moveToNextStep = async () => {
@@ -169,7 +203,14 @@ const VerseRecommender: React.FC = () => {
 
   return (
     <div className="bg-slate-900 min-h-screen">
-      {showWelcome && <WelcomeSection onStartJourney={handleStartJourney} />}
+      {showWelcome && (
+        <WelcomeSection
+          onStartJourney={handleStartJourney}
+          onViewFavorites={handleViewFavorites} // Pass new prop
+        />
+      )}
+
+      {showFavorites && <FavoriteVerses onBack={handleBackFromFavorites} />}
 
       <div className="min-h-screen">
         {showTunnel && (
