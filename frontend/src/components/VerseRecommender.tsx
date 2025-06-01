@@ -9,6 +9,7 @@ import JourneyStep from "./JourneyStep";
 import VerseDisplay from "./VerseDisplay";
 import TunnelEffect from "./TunnelEffect";
 import WelcomeSection from "./WelcomeSection";
+import FavoriteVerses from "./FavoritesPage"; // New import
 import {
   themeOptions,
   audienceOptions,
@@ -67,6 +68,7 @@ const steps = [
 
 const VerseRecommender: React.FC = () => {
   const [showWelcome, setShowWelcome] = useState(true);
+  const [showFavorites, setShowFavorites] = useState(false); // New state
   const [currentStep, setCurrentStep] = useState(-1);
   const [loading, setLoading] = useState(false);
   const [verse, setVerse] = useState<VerseData | null>(null);
@@ -91,6 +93,39 @@ const VerseRecommender: React.FC = () => {
     }
   }, [zoomEffect]);
 
+  // Reset all states to return to homepage
+  const handleExit = () => {
+    // Reset all states to initial values
+    setVerse(null);
+    setCurrentStep(-1);
+    setLoading(false);
+    setShowTunnel(false);
+    setShowFavorites(false); // Reset favorites view
+    setZoomEffect(0);
+    setParameters({
+      theme: "",
+      audience: "",
+      length: "",
+      tone: "",
+      location: "",
+    });
+
+    // Show welcome screen again
+    setShowWelcome(true);
+  };
+
+  // New function to handle favorites navigation
+  const handleViewFavorites = () => {
+    setShowWelcome(false);
+    setShowFavorites(true);
+  };
+
+  // New function to go back from favorites to homepage
+  const handleBackFromFavorites = () => {
+    setShowFavorites(false);
+    setShowWelcome(true);
+  };
+
   const handleSelect = (value: string) => {
     setZoomEffect(1);
 
@@ -106,7 +141,10 @@ const VerseRecommender: React.FC = () => {
   };
 
   const handleSkip = () => {
-    moveToNextStep();
+    setZoomEffect(1);
+    setTimeout(() => {
+      moveToNextStep();
+    }, 300);
   };
 
   const handleSkipAll = async () => {
@@ -165,7 +203,14 @@ const VerseRecommender: React.FC = () => {
 
   return (
     <div className="bg-slate-900 min-h-screen">
-      {showWelcome && <WelcomeSection onStartJourney={handleStartJourney} />}
+      {showWelcome && (
+        <WelcomeSection
+          onStartJourney={handleStartJourney}
+          onViewFavorites={handleViewFavorites} // Pass new prop
+        />
+      )}
+
+      {showFavorites && <FavoriteVerses onBack={handleBackFromFavorites} />}
 
       <div className="min-h-screen">
         {showTunnel && (
@@ -175,7 +220,7 @@ const VerseRecommender: React.FC = () => {
             onOptionSelect={handleSelect}
             currentStep={currentStep}
             zoomEffect={zoomEffect}
-            skipSelection={handleSkipAll}
+            skipSelection={handleSkip}
           />
         )}
 
@@ -189,7 +234,11 @@ const VerseRecommender: React.FC = () => {
             <LoadingIndicator size="large" />
           </motion.div>
         ) : verse ? (
-          <VerseDisplay verse={verse} backgroundClass={backgroundClass} />
+          <VerseDisplay
+            verse={verse}
+            backgroundClass={backgroundClass}
+            onExit={handleExit}
+          />
         ) : (
           currentStep >= 0 &&
           !showTunnel && (
