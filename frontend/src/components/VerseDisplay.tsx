@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Play, Pause, Heart, Share2 } from "lucide-react";
+import { Play, Pause, Heart, Share2, X } from "lucide-react";
 import { VerseData } from "../types/types";
 import { toast } from "react-toastify";
 
 interface VerseDisplayProps {
   verse: VerseData;
   backgroundClass: string;
+  onExit: () => void; // New prop for handling exit
 }
 
 const VerseDisplay: React.FC<VerseDisplayProps> = ({
   verse,
   backgroundClass,
+  onExit,
 }) => {
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(
@@ -126,6 +128,23 @@ const VerseDisplay: React.FC<VerseDisplayProps> = ({
 
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/60 backdrop-blur-sm" />
 
+      {/* Exit button in top-right corner */}
+      <motion.button
+        onClick={onExit}
+        className="fixed top-6 right-6 z-30 p-3 rounded-full bg-slate-800/80 hover:bg-slate-700/80 transition-all duration-300 text-white group"
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, delay: 1.5 }}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.95 }}
+        aria-label="Exit to homepage"
+      >
+        <X
+          size={24}
+          className="group-hover:rotate-90 transition-transform duration-300"
+        />
+      </motion.button>
+
       {/* Main content card with staggered reveal */}
       <motion.div
         initial={{ y: 50, opacity: 0 }}
@@ -232,6 +251,24 @@ const VerseDisplay: React.FC<VerseDisplayProps> = ({
           <div className="text-gray-200">
             Recited by Sheikh Mishary Rashid Alafasy
           </div>
+        </motion.div>
+
+        {/* Additional exit button at the bottom for better UX */}
+        <motion.div
+          className="flex justify-center mt-8 pt-6 border-t border-slate-700/50"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{
+            opacity: showFullContent ? 1 : 0,
+            y: showFullContent ? 0 : 20,
+          }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+        >
+          <button
+            onClick={onExit}
+            className="px-6 py-3 bg-slate-700/60 hover:bg-slate-600/60 rounded-full transition-all duration-300 text-white font-medium"
+          >
+            Return to Homepage
+          </button>
         </motion.div>
       </motion.div>
     </motion.div>

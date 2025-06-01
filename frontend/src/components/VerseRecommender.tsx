@@ -91,6 +91,26 @@ const VerseRecommender: React.FC = () => {
     }
   }, [zoomEffect]);
 
+  // Reset all states to return to homepage
+  const handleExit = () => {
+    // Reset all states to initial values
+    setVerse(null);
+    setCurrentStep(-1);
+    setLoading(false);
+    setShowTunnel(false);
+    setZoomEffect(0);
+    setParameters({
+      theme: "",
+      audience: "",
+      length: "",
+      tone: "",
+      location: "",
+    });
+
+    // Show welcome screen again
+    setShowWelcome(true);
+  };
+
   const handleSelect = (value: string) => {
     setZoomEffect(1);
 
@@ -192,7 +212,11 @@ const VerseRecommender: React.FC = () => {
             <LoadingIndicator size="large" />
           </motion.div>
         ) : verse ? (
-          <VerseDisplay verse={verse} backgroundClass={backgroundClass} />
+          <VerseDisplay
+            verse={verse}
+            backgroundClass={backgroundClass}
+            onExit={handleExit}
+          />
         ) : (
           currentStep >= 0 &&
           !showTunnel && (
