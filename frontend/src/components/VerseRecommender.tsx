@@ -9,7 +9,7 @@ import JourneyStep from "./JourneyStep";
 import VerseDisplay from "./VerseDisplay";
 import TunnelEffect from "./TunnelEffect";
 import WelcomeSection from "./WelcomeSection";
-import FavoriteVerses from "./FavoritesPage"; // New import
+import FavoriteVerses from "./FavoritesPage";
 import {
   themeOptions,
   audienceOptions,
@@ -68,12 +68,13 @@ const steps = [
 
 const VerseRecommender: React.FC = () => {
   const [showWelcome, setShowWelcome] = useState(true);
-  const [showFavorites, setShowFavorites] = useState(false); // New state
+  const [showFavorites, setShowFavorites] = useState(false);
   const [currentStep, setCurrentStep] = useState(-1);
   const [loading, setLoading] = useState(false);
   const [verse, setVerse] = useState<VerseData | null>(null);
   const [showTunnel, setShowTunnel] = useState(false);
   const [zoomEffect, setZoomEffect] = useState(0);
+  const [apiError, setApiError] = useState<string | null>(null); // New state for API errors
   const [parameters, setParameters] = useState<VerseParameters>({
     theme: "",
     audience: "",
@@ -95,13 +96,13 @@ const VerseRecommender: React.FC = () => {
 
   // Reset all states to return to homepage
   const handleExit = () => {
-    // Reset all states to initial values
     setVerse(null);
     setCurrentStep(-1);
     setLoading(false);
     setShowTunnel(false);
-    setShowFavorites(false); // Reset favorites view
+    setShowFavorites(false);
     setZoomEffect(0);
+    setApiError(null); // Reset API error
     setParameters({
       theme: "",
       audience: "",
@@ -109,18 +110,14 @@ const VerseRecommender: React.FC = () => {
       tone: "",
       location: "",
     });
-
-    // Show welcome screen again
     setShowWelcome(true);
   };
 
-  // New function to handle favorites navigation
   const handleViewFavorites = () => {
     setShowWelcome(false);
     setShowFavorites(true);
   };
 
-  // New function to go back from favorites to homepage
   const handleBackFromFavorites = () => {
     setShowFavorites(false);
     setShowWelcome(true);
@@ -149,6 +146,8 @@ const VerseRecommender: React.FC = () => {
 
   const handleSkipAll = async () => {
     setLoading(true);
+    setApiError(null);
+
     try {
       const verseData = await getRandomVerse({
         theme: "",
@@ -160,7 +159,12 @@ const VerseRecommender: React.FC = () => {
       setVerse(verseData);
     } catch (error) {
       console.error("Error fetching verse:", error);
-      toast.error("Could not fetch a verse. Please try again.");
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Could not fetch a verse. Please try again.";
+      setApiError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -170,7 +174,10 @@ const VerseRecommender: React.FC = () => {
     setCurrentStep((prev) => prev + 1);
     if (currentStep >= steps.length - 1) {
       setLoading(true);
+      setApiError(null);
+
       try {
+        console.log("Fetching verse with parameters:", parameters);
         const verseData = await getRandomVerse(parameters);
 
         setTimeout(() => {
@@ -179,7 +186,12 @@ const VerseRecommender: React.FC = () => {
         }, 800);
       } catch (error) {
         console.error("Error fetching verse:", error);
-        toast.error("Could not fetch a verse. Please try again.");
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "Could not fetch a verse. Please try again.";
+        setApiError(errorMessage);
+        toast.error(errorMessage);
         setLoading(false);
       }
     }
@@ -194,6 +206,14 @@ const VerseRecommender: React.FC = () => {
     }, 150);
   };
 
+  // Handle retry after API error
+  const handleRetry = () => {
+    setApiError(null);
+    if (currentStep >= steps.length - 1) {
+      moveToNextStep();
+    }
+  };
+
   const backgroundClass = verse ? getBackgroundClass(verse.tone) : "";
 
   const currentOptions =
@@ -206,7 +226,7 @@ const VerseRecommender: React.FC = () => {
       {showWelcome && (
         <WelcomeSection
           onStartJourney={handleStartJourney}
-          onViewFavorites={handleViewFavorites} // Pass new prop
+          onViewFavorites={handleViewFavorites}
         />
       )}
 
@@ -231,7 +251,38 @@ const VerseRecommender: React.FC = () => {
             exit={{ opacity: 0 }}
             className="fixed inset-0 flex items-center justify-center z-50"
           >
-            <LoadingIndicator size="large" />
+            <div className="text-center">
+              <LoadingIndicator size="large" />
+              <p className="text-white mt-4 text-lg">Fetching your verse...</p>
+            </div>
+          </motion.div>
+        ) : apiError ? (
+          // Error state display
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 flex items-center justify-center z-50 p-4"
+          >
+            <div className="bg-slate-900/90 backdrop-blur-md rounded-2xl p-8 text-white shadow-2xl max-w-md w-full text-center">
+              <div className="text-red-400 text-6xl mb-4">⚠️</div>
+              <h3 className="text-2xl font-semibold mb-4">Connection Error</h3>
+              <p className="text-gray-300 mb-6">{apiError}</p>
+              <div className="flex gap-4 justify-center">
+                <button
+                  onClick={handleRetry}
+                  className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 rounded-full transition-colors duration-300"
+                >
+                  Try Again
+                </button>
+                <button
+                  onClick={handleExit}
+                  className="px-6 py-3 bg-slate-700 hover:bg-slate-600 rounded-full transition-colors duration-300"
+                >
+                  Go Back
+                </button>
+              </div>
+            </div>
           </motion.div>
         ) : verse ? (
           <VerseDisplay
