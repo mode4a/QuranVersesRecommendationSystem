@@ -106,7 +106,10 @@ const VerseRecommender: React.FC = () => {
   };
 
   const handleSkip = () => {
-    moveToNextStep();
+    setZoomEffect(1);
+    setTimeout(() => {
+      moveToNextStep();
+    }, 300);
   };
 
   const handleSkipAll = async () => {
@@ -175,7 +178,7 @@ const VerseRecommender: React.FC = () => {
             onOptionSelect={handleSelect}
             currentStep={currentStep}
             zoomEffect={zoomEffect}
-            skipSelection={handleSkipAll}
+            skipSelection={handleSkip}
           />
         )}
 
