@@ -159,14 +159,14 @@ const VerseDisplay: React.FC<VerseDisplayProps> = ({
           >
             <button
               onClick={saveToFavorites}
-              className="p-3 rounded-full bg-slate-800/80 hover:bg-slate-700/80 transition-colors duration-300"
+              className="p-3 rounded-full bg-slate-800/80 hover:bg-slate-700/80 transition-colors duration-300 cursor-pointer relative z-20"
               aria-label="Save to favorites"
             >
               <Heart size={20} className="text-pink-500" />
             </button>
             <button
               onClick={shareVerse}
-              className="p-3 rounded-full bg-slate-800/80 hover:bg-slate-700/80 transition-colors duration-300"
+              className="p-3 rounded-full bg-slate-800/80 hover:bg-slate-700/80 transition-colors duration-300 cursor-pointer relative z-20"
               aria-label="Share verse"
             >
               <Share2 size={20} />
