@@ -124,14 +124,14 @@ export const toneOptions: Option[] = [
 
 export const locationOptions: Option[] = [
   {
-    value: "makkah",
+    value: "makki",
     label: "Makkan Period",
     image: "https://images.pexels.com/photos/2832034/pexels-photo-2832034.jpeg",
     description:
       "Revelations from the early period focusing on faith and spirituality",
   },
   {
-    value: "madinah",
+    value: "madani",
     label: "Madinan Period",
     image: "https://images.pexels.com/photos/2832039/pexels-photo-2832039.jpeg",
     description: "Later revelations focusing on social and legal guidance",

@@ -127,58 +127,44 @@ const VerseRecommender: React.FC = () => {
     setZoomEffect(1);
 
     const param = steps[currentStep].id as keyof VerseParameters;
+    console.log(`Selected ${param}:`, value);
+
+    // Update parameters state
     setParameters((prev) => ({
       ...prev,
       [param]: value,
     }));
 
     setTimeout(() => {
-      moveToNextStep();
+      moveToNextStep(value, param);
     }, 300);
   };
-
   const handleSkip = () => {
     setZoomEffect(1);
     setTimeout(() => {
       moveToNextStep();
     }, 300);
   };
-
-  const handleSkipAll = async () => {
-    setLoading(true);
-    setApiError(null);
-
-    try {
-      const verseData = await getRandomVerse({
-        theme: "",
-        audience: "",
-        length: "",
-        tone: "",
-        location: "",
-      });
-      setVerse(verseData);
-    } catch (error) {
-      console.error("Error fetching verse:", error);
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "Could not fetch a verse. Please try again.";
-      setApiError(errorMessage);
-      toast.error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const moveToNextStep = async () => {
+  const moveToNextStep = async (
+    selectedValue?: string,
+    selectedParam?: keyof VerseParameters
+  ) => {
     setCurrentStep((prev) => prev + 1);
     if (currentStep >= steps.length - 1) {
       setLoading(true);
       setApiError(null);
 
       try {
-        console.log("Fetching verse with parameters:", parameters);
-        const verseData = await getRandomVerse(parameters);
+        let finalParameters = { ...parameters };
+        if (selectedValue && selectedParam) {
+          finalParameters = {
+            ...parameters,
+            [selectedParam]: selectedValue,
+          };
+        }
+
+        console.log("Fetching verse with parameters:", finalParameters);
+        const verseData = await getRandomVerse(finalParameters);
 
         setTimeout(() => {
           setVerse(verseData);
